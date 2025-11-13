@@ -5,6 +5,7 @@ import com.telegrambot.BotTelegramDEMO.service.GeminiService;
 import com.telegrambot.BotTelegramDEMO.service.JsonStorageService;
 import com.telegrambot.BotTelegramDEMO.service.RegistroService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -12,6 +13,12 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
 public class MyBot extends TelegramLongPollingBot {
+
+    @Value("${bot.username}")
+    private String botUsername;
+
+    @Value("${bot.token}")
+    private String botToken;
 
     @Autowired
     private GeminiService geminiService;
@@ -75,14 +82,10 @@ public class MyBot extends TelegramLongPollingBot {
     }
 
     @Override
-    public String getBotUsername() {
-        return "nutri_demobot";
-    }
+    public String getBotUsername(){ return botUsername; }
 
     @Override
-    public String getBotToken() {
-        return "7975286377:AAGSgMdkAy2lQ4M7dR2c3AstLNWbpDXuC8Y";
-    }
+    public String getBotToken() { return botToken; }
 
     // 🔹 Evita errores por símbolos especiales en Markdown
     private String escapeMarkdown(String text) {

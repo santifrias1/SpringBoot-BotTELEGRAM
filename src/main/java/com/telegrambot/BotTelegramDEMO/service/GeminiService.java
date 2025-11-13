@@ -26,7 +26,7 @@ public class GeminiService {
                 """.formatted(promptUsuario);
 
             ChatResponse response = chatModel.call(new Prompt(promptBase));
-            return response.getResult().getOutput().getText(); // 👈 cambio importante
+            return response.getResult().getOutput().getText();
 
         } catch (Exception e) {
             System.err.println("Error al conectar con Gemini: " + e.getMessage());

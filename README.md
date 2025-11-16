@@ -94,3 +94,9 @@ src/
 - 🤖 **Google Gemini AI**
 - 💬 **Telegram Bot API**
 - 📄 **JSON** para persistencia
+
+---
+
+## 📊 Diagrama de Clases
+
+![Diagrama de Clases](https://imgur.com/a/SC3ryJD)

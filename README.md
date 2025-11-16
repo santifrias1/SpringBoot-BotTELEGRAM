@@ -1,74 +1,91 @@
-🥗 NutriAssist Bot — Asistente Nutricionista con IA
+# 🥗 NutriAssist Bot — Asistente Nutricionista con IA
 
-Bot de Telegram desarrollado en Java + Spring Boot, que funciona como un asistente nutricionista inteligente utilizando Google Gemini.
-Permite registrar usuarios, almacenar sus datos en JSON y responder consultas personalizadas de nutrición, dietas, IMC, calorías y más.
+> Un Bot de Telegram desarrollado en **Java** y **Spring Boot** que actúa como un asistente nutricionista inteligente. Utiliza la tecnología **Google Gemini** para ofrecer consultas personalizadas y guiadas sobre nutrición.
 
-🚀 Características principales
-🤖 Asistente nutricional con IA (Gemini)
+---
 
-El bot analiza los datos del usuario y responde como nutricionista, adaptándose a:
+## 🚀 Características Principales
 
-Edad
+### 🤖 Asistente Nutricional con IA (Gemini)
 
-Peso
+El bot utiliza **Google Gemini** para analizar el perfil del usuario y generar respuestas que simulan la consulta de un nutricionista. Adapta las recomendaciones y análisis a los siguientes datos personales:
 
-Altura
+- ✅ Edad
+- ⚖️ Peso
+- 📏 Altura
+- 👤 Sexo
+- 🏃 Nivel de actividad
+- 🎯 Objetivo (bajar, mantener o subir peso)
 
-Sexo
+Esto permite responder consultas personalizadas sobre dietas, **IMC** (Índice de Masa Corporal), cálculo de calorías y más.
 
-Nivel de actividad
+---
 
-Objetivo (bajar, mantener o subir peso)
+### 📝 Registro Guiado Paso a Paso
 
-📝 Registro guiado paso a paso
+El usuario completa su perfil mediante una serie de preguntas secuenciales. Todos los datos se almacenan en un archivo `.json`.
 
-El usuario completa su perfil mediante preguntas:
+**Campos solicitados:**
 
-Nombre
+1. 📛 Nombre
+2. 🎂 Edad
+3. ⚖️ Peso
+4. 📏 Altura
+5. 👤 Sexo
+6. 🏃 Nivel de actividad
+7. 🎯 Objetivo
 
-Edad
+---
 
-Peso
+### 📁 Persistencia de Datos sin Base de Datos
 
-Altura
+El sistema maneja la persistencia de la información utilizando el sistema de archivos, lo que simplifica su despliegue y gestión.
 
-Sexo
+- 💾 Guarda los perfiles de usuario en: `/data/users.json`
+- 📋 Almacena registros temporales durante el proceso de alta (registro) del usuario
 
-Nivel de actividad
+---
 
-Objetivo
+## 🧠 Funcionamiento Interno
 
-Todos los datos se guardan en un archivo .json.
+El bot se compone de varios servicios que gestionan el flujo de información y la lógica del negocio:
 
-📁 Persistencia sin base de datos
+| Componente | Función Principal |
+|------------|-------------------|
+| `MyBot` | Recibe los mensajes de Telegram y gestiona los comandos |
+| `RegistroService` | Maneja el flujo interactivo de alta del usuario (paso a paso) |
+| `JsonStorage` | Guarda y carga los datos de los usuarios desde el archivo JSON |
+| `GeminiService` | Prepara el prompt con la información contextual del usuario y llama al modelo de Google Gemini |
 
-Guarda usuarios en /data/users.json
+> **Nota:** La respuesta del modelo de IA se envía al usuario final con formato Markdown seguro para una presentación óptima.
 
-Guarda registros temporales durante el proceso de alta
+---
 
-🧠 ¿Cómo funciona?
+## 🏗️ Estructura Básica del Proyecto
 
-MyBot recibe los mensajes y gestiona los comandos.
-
-RegistroService maneja el flujo de alta del usuario.
-
-JsonStorage guarda y carga los datos desde un archivo JSON.
-
-GeminiService prepara el prompt con la información del usuario y llama al modelo de Google Gemini.
-
-La respuesta se envía al usuario con formato Markdown seguro.
-
-Estructura básica del proyecto
+```
 src/
- └── main/
-     ├── java/com.telegrambot.BotTelegramDEMO/
-     │   ├── MyBot.java
-     │   ├── BotConfig.java
-     │   ├── model/User.java
-     │   ├── service/
-     │   │      ├── JsonStorage.java
-     │   │      ├── RegistroService.java
-     │   │      ├── GeminiService.java
-     │   └── BotTelegramDemoApplication.java
-     └── resources/
-         └── application.properties
+└── main/
+    ├── java/com.telegrambot.BotTelegramDEMO/
+    │   ├── MyBot.java
+    │   ├── BotConfig.java
+    │   ├── model/
+    │   │   └── User.java
+    │   ├── service/
+    │   │   ├── JsonStorage.java
+    │   │   ├── RegistroService.java
+    │   │   └── GeminiService.java
+    │   └── BotTelegramDemoApplication.java
+    └── resources/
+        └── application.properties
+```
+
+---
+
+## 🛠️ Tecnologías Utilizadas
+
+- ☕ **Java**
+- 🍃 **Spring Boot**
+- 🤖 **Google Gemini AI**
+- 💬 **Telegram Bot API**
+- 📄 **JSON** para persistencia

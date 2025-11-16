@@ -66,17 +66,22 @@ El bot se compone de varios servicios que gestionan el flujo de información y l
 ```
 src/
 └── main/
-    ├── java/com.telegrambot.BotTelegramDEMO/
-    │   ├── MyBot.java
-    │   ├── BotConfig.java
-    │   ├── model/
-    │   │   └── User.java
-    │   ├── service/
-    │   │   ├── JsonStorage.java
-    │   │   ├── RegistroService.java
-    │   │   └── GeminiService.java
-    │   └── BotTelegramDemoApplication.java
+    ├── java/
+    │   └── com.telegrambot.BotTelegramDEMO/
+    │       ├── bot/
+    │       │   └── MyBot.java
+    │       ├── config/
+    │       │   └── BotConfig.java
+    │       ├── model/
+    │       │   └── User.java
+    │       ├── service/
+    │       │   ├── GeminiService.java
+    │       │   ├── JsonStorageService.java
+    │       │   └── RegistroService.java
+    │       └── BotTelegramDemoApplication.java
     └── resources/
+        ├── data/
+        │   └── users.json
         └── application.properties
 ```
 

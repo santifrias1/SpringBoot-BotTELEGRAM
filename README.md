@@ -99,4 +99,4 @@ src/
 
 ## 📊 Diagrama de Clases
 
-![Diagrama de Clases](https://imgur.com/6DYsSkq)
+![Diagrama de Clases](https://i.imgur.com/6DYsSkq.png)

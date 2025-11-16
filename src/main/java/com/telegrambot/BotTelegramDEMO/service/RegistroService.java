@@ -15,60 +15,113 @@ public class RegistroService {
 
     private final Map<String, String> estados = new HashMap<>();
 
+    public void reiniciarRegistro(String chatId) {
+        jsonStorage.removeTempUser(chatId);          // temporal
+        jsonStorage.removeUser(chatId);              // definitivo
+        estados.remove(chatId);
+    }
+
+
     public String manejarRegistro(String chatId, String mensaje) {
-        // Si el usuario ya está registrado, no repite el registro
+
         if (jsonStorage.findByChatId(chatId) != null) {
-            return "Ya estás registrado 😊. Podés comenzar a hacerme tus consultas sobre nutrición.";
+            return "Ya estás registrado 😊. Si querés reiniciar escribí /registro.";
         }
 
-        String estadoActual = estados.get(chatId);
+        String estado = estados.get(chatId);
 
-        // Primer paso: iniciar registro
         if (mensaje.equalsIgnoreCase("/start")) {
-            estados.put(chatId, "PEDIR_NOMBRE");
-            return "👋 ¡Hola! Soy *NutriBot*. Antes de empezar, decime tu *nombre*:";
+            estados.put(chatId, "NOMBRE");
+            return "👋 ¡Hola! Soy *NutriBot*. Decime tu *nombre*:";
         }
 
-        // Segundo paso: nombre
-        if ("PEDIR_NOMBRE".equals(estadoActual)) {
-            User user = new User();
-            user.setChatId(chatId);
-            user.setNombre(mensaje);
-            jsonStorage.saveTempUser(user);
-            estados.put(chatId, "PEDIR_EDAD");
-            return "Gracias, " + mensaje + ". Ahora decime tu *edad*:";
+        if ("NOMBRE".equals(estado)) {
+            User u = new User();
+            u.setChatId(chatId);
+            u.setNombre(mensaje);
+            jsonStorage.saveTempUser(u);
+
+            estados.put(chatId, "EDAD");
+            return "Perfecto. Ahora tu *edad*:";
         }
 
-        // Tercer paso: edad
-        if ("PEDIR_EDAD".equals(estadoActual)) {
+        if ("EDAD".equals(estado)) {
             try {
                 int edad = Integer.parseInt(mensaje);
-                User user = jsonStorage.findTempUser(chatId);
-                if (user != null) {
-                    user.setEdad(edad);
-                    jsonStorage.saveTempUser(user);
-                }
-                estados.put(chatId, "PEDIR_OBJETIVO");
-                return "Perfecto 👌. Ahora contame cuál es tu *objetivo nutricional* (por ejemplo: bajar de peso, ganar masa muscular, mantenerte, etc.):";
-            } catch (NumberFormatException e) {
-                return "⚠️ Por favor ingresá una edad válida (solo números).";
+                User u = jsonStorage.findTempUser(chatId);
+                u.setEdad(edad);
+                jsonStorage.saveTempUser(u);
+
+                estados.put(chatId, "PESO");
+                return "Genial. Ahora decime tu *peso en kg*:";
+            } catch (Exception e) {
+                return "Ingresá solo números.";
             }
         }
 
-        // Cuarto paso: objetivo
-        if ("PEDIR_OBJETIVO".equals(estadoActual)) {
-            User user = jsonStorage.findTempUser(chatId);
-            if (user != null) {
-                user.setObjetivo(mensaje);
-                jsonStorage.saveUser(user);  // Guarda en el JSON definitivo
-                jsonStorage.removeTempUser(chatId);
-                estados.remove(chatId);
-                return "¡Registro completado con éxito, " + user.getNombre() + "! 🎉\n" +
-                        "Podés empezar a consultarme lo que necesites sobre nutrición 🥗.";
+        if ("PESO".equals(estado)) {
+            try {
+                double peso = Double.parseDouble(mensaje);
+                User u = jsonStorage.findTempUser(chatId);
+                u.setPeso(peso);
+                jsonStorage.saveTempUser(u);
+
+                estados.put(chatId, "ALTURA");
+                return "Anotado 👍. ¿Cuál es tu *altura en cm*?";
+            } catch (Exception e) {
+                return "Ingresá un número válido.";
             }
         }
 
-        // Si algo falla
-        return "No entendí eso 🤔. Escribí /start para comenzar el registro.";
+        if ("ALTURA".equals(estado)) {
+            try {
+                double altura = Double.parseDouble(mensaje);
+                User u = jsonStorage.findTempUser(chatId);
+                u.setAltura(altura);
+                jsonStorage.saveTempUser(u);
+
+                estados.put(chatId, "SEXO");
+                return "Decime tu *sexo* (masculino/femenino):";
+            } catch (Exception e) {
+                return "Ingresá un número válido.";
+            }
+        }
+
+        if ("SEXO".equals(estado)) {
+            User u = jsonStorage.findTempUser(chatId);
+            u.setSexo(mensaje);
+            jsonStorage.saveTempUser(u);
+
+            estados.put(chatId, "ACTIVIDAD");
+            return """
+                    ¿Cuál es tu *nivel de actividad física*?
+                    - Sedentario  
+                    - Ligero (1-2 veces/semana)  
+                    - Moderado (3-4 veces/semana)  
+                    - Intenso (5-6 veces/semana)  
+                    """;
+        }
+
+        if ("ACTIVIDAD".equals(estado)) {
+            User u = jsonStorage.findTempUser(chatId);
+            u.setActividad(mensaje);
+            jsonStorage.saveTempUser(u);
+
+            estados.put(chatId, "OBJETIVO");
+            return "Por último, ¿cuál es tu *objetivo nutricional*?";
+        }
+
+        if ("OBJETIVO".equals(estado)) {
+            User u = jsonStorage.findTempUser(chatId);
+            u.setObjetivo(mensaje);
+
+            jsonStorage.saveUser(u);
+            jsonStorage.removeTempUser(chatId);
+            estados.remove(chatId);
+
+            return "🎉 *¡Registro completado!* Podés empezar a consultarme lo que quieras.";
+        }
+
+        return "No entendí eso. Escribí /start para registrarte.";
     }
 }

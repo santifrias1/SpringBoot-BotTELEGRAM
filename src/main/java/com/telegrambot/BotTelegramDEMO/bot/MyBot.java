@@ -31,50 +31,106 @@ public class MyBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
+
         if (update.hasMessage() && update.getMessage().hasText()) {
+
             String mensaje = update.getMessage().getText().trim();
             String chatId = update.getMessage().getChatId().toString();
             String respuesta;
 
             try {
-                //Inicio del registro
+                if (mensaje.equalsIgnoreCase("/ayuda")) {
+                    respuesta = """
+                        📌 *Comandos disponibles:*
+                        
+                        /start – Iniciar registro  
+                        /datos – Ver tus datos guardados  
+                        /info – Información útil  
+                        /registro – Reiniciar registro  
+                        /ayuda – Ver esta lista  
+                        """;
+                    enviar(chatId, respuesta);
+                    return;
+                }
+
+                if (mensaje.equalsIgnoreCase("/datos")) {
+                    User u = jsonStorage.findByChatId(chatId);
+                    if (u == null) {
+                        enviar(chatId, "No encontré tus datos, usá /start para registrarte.");
+                        return;
+                    }
+
+                    respuesta = String.format("""
+                        📋 *Tus datos:*
+
+                        👤 Nombre: %s  
+                        🎂 Edad: %d  
+                        🎯 Objetivo: %s  
+                        ⚖️ Peso: %.1f kg  
+                        📏 Altura: %.1f cm  
+                        🚻 Sexo: %s  
+                        🏃 Actividad: %s  
+                        """,
+                            u.getNombre(), u.getEdad(), u.getObjetivo(),
+                            u.getPeso(), u.getAltura(), u.getSexo(), u.getActividad()
+                    );
+
+                    enviar(chatId, respuesta);
+                    return;
+                }
+
+                if (mensaje.equalsIgnoreCase("/info")) {
+                    respuesta = """
+                        ℹ️ *Información útil*
+
+                        Para calcular calorías uso:
+                        - Edad, peso, altura, sexo  
+                        - Nivel de actividad  
+                        - Tu objetivo nutricional  
+
+                        Además, podés consultarme ideas de comidas, calorías,
+                        cómo armar una dieta, etc.
+                        """;
+                    enviar(chatId, respuesta);
+                    return;
+                }
+
+                if (mensaje.equalsIgnoreCase("/registro")) {
+                    registroService.reiniciarRegistro(chatId);
+                    enviar(chatId, "Registro reiniciado. Escribí /start para comenzar.");
+                    return;
+                }
+
+                // Inicio registro
                 if (mensaje.equalsIgnoreCase("/start")) {
                     respuesta = registroService.manejarRegistro(chatId, mensaje);
 
-                    //Si el usuario no está registrado, continuar el flujo de registro
                 } else if (!estaRegistrado(chatId)) {
                     respuesta = registroService.manejarRegistro(chatId, mensaje);
 
-                    //Usuario ya registrado → procesar consulta con Gemini
                 } else {
+                    // Usuario ya registrado → enviar a Gemini
                     User user = jsonStorage.findByChatId(chatId);
-                    String contexto = String.format("""
-                            El usuario se llama %s, tiene %d años y su objetivo es %s.
-                            Responde de forma amigable y profesional, como un nutricionista que conoce su caso.
-                            """, user.getNombre(), user.getEdad(), user.getObjetivo());
-
-                    String promptFinal = contexto + "\n\nConsulta del usuario: " + mensaje;
-                    respuesta = geminiService.obtenerRespuesta(promptFinal);
+                    respuesta = geminiService.obtenerRespuesta(user, mensaje);
                 }
 
+                enviar(chatId, respuesta);
+
             } catch (Exception e) {
                 e.printStackTrace();
-                respuesta = "⚠️ Ocurrió un error procesando tu mensaje. Intenta de nuevo.";
-            }
-
-            // Enviar mensaje con texto escapado (evita error 400 Bad Request)
-            SendMessage message = new SendMessage();
-            message.setChatId(chatId);
-            message.setText(escapeMarkdown(respuesta));
-            message.enableMarkdown(true);
-
-            try {
-                execute(message);
-            } catch (Exception e) {
-                e.printStackTrace();
+                enviar(chatId, "⚠️ Error inesperado.");
             }
         }
     }
+
+    private void enviar(String chatId, String respuesta) {
+        SendMessage msg = new SendMessage();
+        msg.setChatId(chatId);
+        msg.setText(escapeMarkdownSimple(respuesta));
+        msg.enableMarkdown(true);
+        try { execute(msg); } catch (Exception ignored) {}
+    }
+
 
     private boolean estaRegistrado(String chatId) {
         return jsonStorage.getAllUsers().stream()
@@ -88,26 +144,15 @@ public class MyBot extends TelegramLongPollingBot {
     public String getBotToken() { return botToken; }
 
     // 🔹 Evita errores por símbolos especiales en Markdown
-    private String escapeMarkdown(String text) {
+    private String escapeMarkdownSimple(String text) {
         if (text == null) return "";
         return text
                 .replace("_", "\\_")
                 .replace("*", "\\*")
                 .replace("[", "\\[")
                 .replace("]", "\\]")
-                .replace("(", "\\(")
-                .replace(")", "\\)")
-                .replace("~", "\\~")
-                .replace("`", "\\`")
-                .replace(">", "\\>")
-                .replace("#", "\\#")
-                .replace("+", "\\+")
-                .replace("-", "\\-")
-                .replace("=", "\\=")
-                .replace("|", "\\|")
-                .replace("{", "\\{")
-                .replace("}", "\\}")
-                .replace(".", "\\.")
-                .replace("!", "\\!");
+                .replace("`", "\\`");
     }
+
+
 }

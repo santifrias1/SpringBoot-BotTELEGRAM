@@ -1,5 +1,6 @@
 package com.telegrambot.BotTelegramDEMO.service;
 
+import com.telegrambot.BotTelegramDEMO.model.User;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -14,24 +15,34 @@ public class GeminiService {
         this.chatModel = chatModel;
     }
 
-    public String obtenerRespuesta(String promptUsuario) {
-        try {
-            String promptBase = """
-                Eres un asistente virtual especializado en nutrición y bienestar.
-                Responde siempre con información clara, amigable y basada en evidencia científica.
-                Si el usuario pregunta algo fuera de nutrición, puedes responder brevemente
-                pero intenta guiarlo nuevamente hacia temas de alimentación saludable.
+    public String obtenerRespuesta(User user, String consulta) {
+        String promptBase = """
+        Eres un asistente virtual especializado en nutrición y bienestar.
+        Responde de forma clara y amigable.
+        
+        Información del usuario:
+        - Nombre: %s
+        - Edad: %d
+        - Peso: %.1f kg
+        - Altura: %.1f cm
+        - Sexo: %s
+        - Actividad física: %s
+        - Objetivo: %s
 
-                Usuario: %s
-                """.formatted(promptUsuario);
+        Consulta del usuario: %s
+        """.formatted(
+                user.getNombre(),
+                user.getEdad(),
+                user.getPeso(),
+                user.getAltura(),
+                user.getSexo(),
+                user.getActividad(),
+                user.getObjetivo(),
+                consulta
+        );
 
-            ChatResponse response = chatModel.call(new Prompt(promptBase));
-            return response.getResult().getOutput().getText();
-
-        } catch (Exception e) {
-            System.err.println("Error al conectar con Gemini: " + e.getMessage());
-            e.printStackTrace();
-            return "⚠️ No pude contactar con Gemini. Verifica la API key o el modelo configurado.";
-        }
+        ChatResponse response = chatModel.call(new Prompt(promptBase));
+        return response.getResult().getOutput().getText();
     }
+
 }

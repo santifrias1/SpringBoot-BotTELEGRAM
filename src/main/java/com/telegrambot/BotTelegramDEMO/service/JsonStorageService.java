@@ -29,6 +29,13 @@ public class JsonStorageService {
         tempUsers.remove(chatId);
     }
 
+    public void removeUser(String chatId) {
+        List<User> users = getAllUsers();
+        users.removeIf(u -> u.getChatId().equals(chatId));
+        saveAllUsers(users);
+    }
+
+
     // 🔹 Guarda el usuario definitivo en el archivo JSON
     public void saveUser(User user) {
         List<User> users = getAllUsers();

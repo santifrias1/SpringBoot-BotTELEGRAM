@@ -13,10 +13,10 @@ import java.util.*;
 public class JsonStorageService {
 
     private static final String FILE_PATH = "src/main/resources/data/users.json";
-    private final ObjectMapper mapper = new ObjectMapper();
-    private final Map<String, User> tempUsers = new HashMap<>();
+    private final ObjectMapper mapper = new ObjectMapper(); //convierte objetos java ↔ JSON
+    private final Map<String, User> tempUsers = new HashMap<>(); //guarda usuarios temporalmente durante el registro
 
-    // 🔹 Guarda temporalmente un usuario mientras se registra
+    //guarda temporalmente un usuario mientras se registra
     public void saveTempUser(User user) {
         tempUsers.put(user.getChatId(), user);
     }
@@ -29,49 +29,52 @@ public class JsonStorageService {
         tempUsers.remove(chatId);
     }
 
+    //elimins al usuario definitivo
     public void removeUser(String chatId) {
         List<User> users = getAllUsers();
-        users.removeIf(u -> u.getChatId().equals(chatId));
+        users.removeIf(u -> u.getChatId().equals(chatId)); //remueve el usuario mediante su id
         saveAllUsers(users);
     }
 
 
-    // 🔹 Guarda el usuario definitivo en el archivo JSON
+    //guarda el usuario definitivo en el archivo JSON
     public void saveUser(User user) {
         List<User> users = getAllUsers();
-        users.removeIf(u -> u.getChatId().equals(user.getChatId()));
+        users.removeIf(u -> u.getChatId().equals(user.getChatId())); //elimina el usuario que tenga mismo id que el actual
         users.add(user);
         saveAllUsers(users);
     }
 
-    // 🔹 Devuelve todos los usuarios registrados
+    //devuelve todos los usuarios registrados
     public List<User> getAllUsers() {
         try {
-            File file = new File(FILE_PATH);
+            File file = new File(FILE_PATH); //objeto file apuntando al .json
             if (!file.exists()) {
-                file.getParentFile().mkdirs();
-                mapper.writeValue(file, new ArrayList<>());
+                file.getParentFile().mkdirs(); //crea carpetas necesarias
+                mapper.writeValue(file, new ArrayList<>()); //crea el json con una lista vacia
             }
-            return mapper.readValue(file, new TypeReference<>() {});
+            return mapper.readValue(file, new TypeReference<>() {}); //convierte JSON en una lista de objetos User
         } catch (IOException e) {
             e.printStackTrace();
-            return new ArrayList<>();
+            return new ArrayList<>(); //devuelve lista vacia en caso de error
         }
     }
 
-    // 🔹 Guarda la lista completa en el archivo JSON
+    //guarda la lista completa en el archivo JSON
     private void saveAllUsers(List<User> users) {
         try {
+            //toma la lista de usuarios, las convierte en JSON y las escribe en el archivo
             mapper.writerWithDefaultPrettyPrinter().writeValue(new File(FILE_PATH), users);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    //busca usuario mediante su id en la lista de usuarios guardados
     public User findByChatId(String chatId) {
         return getAllUsers().stream()
-                .filter(u -> u.getChatId().equals(chatId))
-                .findFirst()
-                .orElse(null);
+                .filter(u -> u.getChatId().equals(chatId)) //verifica que coincida el id d chat
+                .findFirst()  //devuelve el primero
+                .orElse(null); //si no, devuelve null
     }
 }

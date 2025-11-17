@@ -22,20 +22,16 @@ public class MyBot extends TelegramLongPollingBot {
 
     @Autowired
     private GeminiService geminiService;
-
-    @Autowired
     private RegistroService registroService;
-
-    @Autowired
     private JsonStorageService jsonStorage;
 
     @Override
     public void onUpdateReceived(Update update) {
 
-        if (update.hasMessage() && update.getMessage().hasText()) {
+        if (update.hasMessage() && update.getMessage().hasText()) { //verifica si es un msj de texto y no sticker, etc.
 
-            String mensaje = update.getMessage().getText().trim();
-            String chatId = update.getMessage().getChatId().toString();
+            String mensaje = update.getMessage().getText().trim(); //texto que escribio el usuario
+            String chatId = update.getMessage().getChatId().toString(); //obtiene id del chat
             String respuesta;
 
             try {
@@ -49,12 +45,12 @@ public class MyBot extends TelegramLongPollingBot {
                         /registro – Reiniciar registro  
                         /ayuda – Ver esta lista  
                         """;
-                    enviar(chatId, respuesta);
+                    enviar(chatId, respuesta); //envia respuesta al usuario
                     return;
                 }
 
                 if (mensaje.equalsIgnoreCase("/datos")) {
-                    User u = jsonStorage.findByChatId(chatId);
+                    User u = jsonStorage.findByChatId(chatId); //busca al usuario en el JSON mediante su id
                     if (u == null) {
                         enviar(chatId, "No encontré tus datos, usá /start para registrarte.");
                         return;
@@ -96,20 +92,19 @@ public class MyBot extends TelegramLongPollingBot {
                 }
 
                 if (mensaje.equalsIgnoreCase("/registro")) {
-                    registroService.reiniciarRegistro(chatId);
+                    registroService.reiniciarRegistro(chatId); //reinicia los datos/registro del usuario
                     enviar(chatId, "Registro reiniciado. Escribí /start para comenzar.");
                     return;
                 }
 
-                // Inicio registro
-                if (mensaje.equalsIgnoreCase("/start")) {
+                if (mensaje.equalsIgnoreCase("/start")) { //inicio de chat (registro)
                     respuesta = registroService.manejarRegistro(chatId, mensaje);
 
                 } else if (!estaRegistrado(chatId)) {
                     respuesta = registroService.manejarRegistro(chatId, mensaje);
 
                 } else {
-                    // Usuario ya registrado → enviar a Gemini
+                    //si el  usuario ya esta registrado → enviar a Gemini
                     User user = jsonStorage.findByChatId(chatId);
                     respuesta = geminiService.obtenerRespuesta(user, mensaje);
                 }
@@ -117,24 +112,24 @@ public class MyBot extends TelegramLongPollingBot {
                 enviar(chatId, respuesta);
 
             } catch (Exception e) {
-                e.printStackTrace();
+                e.printStackTrace(); //si hay un error, lo muestra en consola
                 enviar(chatId, "⚠️ Error inesperado.");
             }
         }
     }
 
     private void enviar(String chatId, String respuesta) {
-        SendMessage msg = new SendMessage();
+        SendMessage msg = new SendMessage(); //funcion de libreria telegram bots
         msg.setChatId(chatId);
         msg.setText(escapeMarkdownSimple(respuesta));
         msg.enableMarkdown(true);
-        try { execute(msg); } catch (Exception ignored) {}
+        try { execute(msg); } catch (Exception ignored) {} //envia msg a telegram con execute(msg)
     }
 
 
     private boolean estaRegistrado(String chatId) {
-        return jsonStorage.getAllUsers().stream()
-                .anyMatch(u -> u.getChatId().equals(chatId));
+        return jsonStorage.getAllUsers().stream() //devuelve la lista de usuarios registrados
+                .anyMatch(u -> u.getChatId().equals(chatId)); //verifica si se encuentra un Usuario con el id que busca
     }
 
     @Override
@@ -143,7 +138,7 @@ public class MyBot extends TelegramLongPollingBot {
     @Override
     public String getBotToken() { return botToken; }
 
-    // 🔹 Evita errores por símbolos especiales en Markdown
+    //evitar errores de texto por los símbolos especiales en Markdown
     private String escapeMarkdownSimple(String text) {
         if (text == null) return "";
         return text

@@ -11,11 +11,13 @@ public class GeminiService {
 
     private final ChatModel chatModel;
 
+    //inyectamos ChatModel de la libreria Spring AI
     public GeminiService(ChatModel chatModel) {
         this.chatModel = chatModel;
     }
 
-    public String obtenerRespuesta(User user, String consulta) {
+    public String obtenerRespuesta(User user, String consulta) { //metodo que genera la respuesta de la IA
+        //construccion del prompt
         String promptBase = """
         Eres un asistente virtual especializado en nutrición y bienestar.
         Responde de forma clara y amigable.
@@ -38,11 +40,11 @@ public class GeminiService {
                 user.getSexo(),
                 user.getActividad(),
                 user.getObjetivo(),
-                consulta
+                consulta //mensaje del usuario
         );
 
-        ChatResponse response = chatModel.call(new Prompt(promptBase));
-        return response.getResult().getOutput().getText();
+        ChatResponse response = chatModel.call(new Prompt(promptBase)); //consultamos a la IA
+        return response.getResult().getOutput().getText(); //respuesta de la IA
     }
 
 }

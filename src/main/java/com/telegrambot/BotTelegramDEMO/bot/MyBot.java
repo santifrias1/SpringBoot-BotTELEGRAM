@@ -22,7 +22,11 @@ public class MyBot extends TelegramLongPollingBot {
 
     @Autowired
     private GeminiService geminiService;
+
+    @Autowired
     private RegistroService registroService;
+
+    @Autowired
     private JsonStorageService jsonStorage;
 
     @Override
